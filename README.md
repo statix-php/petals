@@ -1,8 +1,8 @@
 # A PHP templating engine based on Laravel Blade
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/statix/petals.svg?style=flat-square)](https://packagist.org/packages/statix-php/petals)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/statix/petals.svg?style=flat-square)](https://packagist.org/packages/statix/petals)
 [![Tests](https://github.com/statix-php/petals/actions/workflows/run-tests.yml/badge.svg?branch=main)](https://github.com/statix-php/petals/actions/workflows/run-tests.yml)
-[![Total Downloads](https://img.shields.io/packagist/dt/statix/petals.svg?style=flat-square)](https://packagist.org/packages/statix-php/petals)
+[![Total Downloads](https://img.shields.io/packagist/dt/statix/petals.svg?style=flat-square)](https://packagist.org/packages/statix/petals)
 
 ![Banner image](.github/banner.jpg)
 
