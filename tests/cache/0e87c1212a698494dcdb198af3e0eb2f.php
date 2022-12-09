@@ -1,0 +1,1 @@
+<h2>Hello from <?php echo @htmlspecialchars($name); ?> and value = <?php echo @htmlspecialchars($value); ?></h2><?php /** __template_path__:  */ ?>

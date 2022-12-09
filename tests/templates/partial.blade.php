@@ -1,0 +1,1 @@
+<h2>Hello from {{ $name }} and value = {{ $value }}</h2>
