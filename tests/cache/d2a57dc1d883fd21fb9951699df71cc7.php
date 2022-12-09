@@ -2,33 +2,33 @@
 
     <p>This is the actual final page</p>
 
-    <?php if ($name === 'John' && str_contains($name, 'ohn')): ?>
+    <?php if ($name === 'John' && str_contains($name, 'ohn')) { ?>
         <p>Hello {{ $name }}</p>
-    <?php endif; ?>
+    <?php } ?>
 
-    <?php if ($name === 'John'): ?>
+    <?php if ($name === 'John') { ?>
         <p>Hello {{ $name }}</p>    
-    <?php elseif ($name === 'Doe'): ?>
+    <?php } elseif ($name === 'Doe') { ?>
         <p>Hola {{ $nickname }}</p>
-    <?php else: ?>
+    <?php } else { ?>
         <p>Hello Guest</p>
-    <?php endif; ?>
+    <?php } ?>
 
-    <?php echo $this->render('partial', array_merge($this->data,  [
-        'value' => '123'
+    <?php echo $this->render('partial', array_merge($this->data, [
+        'value' => '123',
     ])); ?>
 
-    <?php foreach (range(1, 5) as $item): ?>
+    <?php foreach (range(1, 5) as $item) { ?>
         <p>{{ $item }}</p>
-    <?php endforeach; ?>
+    <?php } ?>
 
-    <?php foreach ([1, 2] as $number): ?>
+    <?php foreach ([1, 2] as $number) { ?>
         <p>{{ $number }}</p>
-    <?php endforeach; ?>
+    <?php } ?>
 
-    <?php for ($i = 0; $i < 10; $i++): ?>
+    <?php for ($i = 0; $i < 10; $i++) { ?>
         <p>{{ $i }}</p>
-    <?php endfor; ?>
+    <?php } ?>
 
     
 

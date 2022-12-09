@@ -64,7 +64,6 @@ class TemplatingEngine implements TemplatingEngineContract
 
         // if the compiled path does not exist or the template has been modified since the last compile, compile the template
         if (! file_exists($compiledPath) || filemtime($templatePath) > filemtime($compiledPath)) {
-
             // get the template contents
             $templateContents = file_get_contents($templatePath);
 
