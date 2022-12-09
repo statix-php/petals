@@ -1,5 +1,5 @@
 {
-    "name": "statix-php/petals",
+    "name": "statix/petals",
     "description": "A PHP templating engine based on Laravel Blade",
     "keywords": [
         "statix-php",
