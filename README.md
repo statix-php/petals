@@ -4,6 +4,8 @@
 [![Tests](https://github.com/statix-php/petals/actions/workflows/run-tests.yml/badge.svg?branch=main)](https://github.com/statix-php/petals/actions/workflows/run-tests.yml)
 [![Total Downloads](https://img.shields.io/packagist/dt/statix-php/petals.svg?style=flat-square)](https://packagist.org/packages/statix-php/petals)
 
+![Banner image](.github/banner.jpg)
+
 Petals is a zero dependency PHP templating engine based on Laravel Blade. This was built as a fun experiment to play with ChatGPT and GitHub Co-pilot, between the two AI tools they wrote ~60% of the code.
 
 ## Installation
