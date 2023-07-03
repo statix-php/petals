@@ -9,6 +9,8 @@ class TemplatingEngine implements TemplatingEngineContract
 {
     use Directives;
 
+    protected array $sharedData = [];
+
     protected array $data = [];
 
     protected array $directives = [
@@ -37,6 +39,7 @@ class TemplatingEngine implements TemplatingEngineContract
     public function __construct(
         private string $templates,
         private string $cachePath,
+        private string $extension = '.blade.php',
     ) {
         // ensure that the cache path exists
         if (! file_exists($this->cachePath)) {
@@ -51,16 +54,18 @@ class TemplatingEngine implements TemplatingEngineContract
 
     /**
      * Compile the given template and return the path to the compiled php file.
-     *
-     * @param  string  $template
-     * @return string
      */
     public function compile(string $template): string
     {
+        $templatePath = $this->getTemplatePath($template);
+
+        // check if the template exists
+        if (! file_exists($templatePath)) {
+            throw new \Exception("Template {$template} does not exist.");
+        }
+
         // get the compiled path
         $compiledPath = $this->getCompiledPath($template);
-
-        $templatePath = $this->getTemplatePath($template);
 
         // if the compiled path does not exist or the template has been modified since the last compile, compile the template
         if (! file_exists($compiledPath) || filemtime($templatePath) > filemtime($compiledPath)) {
@@ -82,15 +87,15 @@ class TemplatingEngine implements TemplatingEngineContract
 
     /**
      * Compile the given string and return the compiled string.
-     *
-     * @param  string  $template
-     * @return string
      */
     public function compileString(string $template): string
     {
         return trim($this->compileDirectives($template));
     }
 
+    /**
+     * Compile the given template and return the compiled string.
+     */
     protected function compileDirectives(string $template): string
     {
         // loop through the directives and check if the template contains the directive before compiling it, if it does not contain the directive, continue to the next directive
@@ -110,20 +115,37 @@ class TemplatingEngine implements TemplatingEngineContract
         return $template;
     }
 
-    protected function getCompiledPath(string $template): string
+    /**
+     * Get the path where the compiled template or string will be created.
+     * The path is based on the template path and the last modified time of the template.
+     * If the template does not exist, the last modified time is the current time.
+     */
+    public function getCompiledPath(string $template): string
     {
         // generate a unique name for the compiled template that accounts for the template path and the last modified time
-        $compiledName = md5($template).'.php';
+        $templatePath = $this->getTemplatePath($template);
 
-        // return the compiled path
+        if (file_exists($templatePath)) {
+            $lastModified = filemtime($templatePath);
+        } else {
+            $lastModified = time();
+        }
+
+        $compiledName = md5($templatePath.'-'.$lastModified).'.php';
+
         return $this->cachePath.DIRECTORY_SEPARATOR.$compiledName;
     }
 
-    protected function getTemplatePath(string $template): string
+    /**
+     * Get the path to the given template.
+     *
+     * If the given template does not have an extension, the default extension which is .blade.php will be added.
+     */
+    public function getTemplatePath(string $template): string
     {
         // if the given template has no extension, add the default extension which is .blade.php
         if (pathinfo($template, PATHINFO_EXTENSION) === '') {
-            $template .= '.blade.php';
+            $template .= $this->extension;
         }
 
         return realpath($this->templates.DIRECTORY_SEPARATOR.$template);
@@ -131,10 +153,6 @@ class TemplatingEngine implements TemplatingEngineContract
 
     /**
      * Render the given template with the given data and get the contents back.
-     *
-     * @param  string  $template
-     * @param  array  $data
-     * @return string
      */
     public function render(string $template, array $data = []): string
     {
@@ -164,7 +182,7 @@ class TemplatingEngine implements TemplatingEngineContract
         ob_start();
 
         // extract the data to variables
-        extract($this->data);
+        extract(array_merge($this->sharedData, $this->data));
 
         // include the compiled template
         include $compiledPath;
@@ -181,10 +199,6 @@ class TemplatingEngine implements TemplatingEngineContract
 
     /**
      * Render the given string with the given data and get the contents back.
-     *
-     * @param  string  $template
-     * @param  array  $data
-     * @return string
      */
     public function renderString(string $template, array $data = []): string
     {
@@ -207,5 +221,10 @@ class TemplatingEngine implements TemplatingEngineContract
         unlink($compiledPath);
 
         return $contents;
+    }
+
+    public function share(array $data): void
+    {
+        $this->sharedData = array_merge($this->sharedData, $data);        
     }
 }
