@@ -12,6 +12,8 @@ $engine = new TemplatingEngine(
     cache: false,
 );
 
+$engine->clearCache();
+
 dd($engine->render('app', [
     'name' => '<p>Hello world</p><script>alert("name")</script>',
     'records' => [],

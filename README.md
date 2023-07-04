@@ -41,7 +41,7 @@ $engine->renderString('Hello {{ $name }}! The unix timestamp is {{ $time }}', [
 ]);
 
 // Compile the template to the cache directory, the compiled template will be used to render the template when render is called
-$engine->complile('app');
+$engine->compile('app');
 
 // Compile the given string to the cache directory, if render is called on the same string, it will be rendered from the compiled cache template
 $engine->compileString('Hello {{ $name }}! The unix timestamp is {{ $time }}');
@@ -56,13 +56,15 @@ $engine->clearCache();
 composer test
 ```
 
+## Formatting
+
+```bash
+composer format
+```
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
-
-## Security Vulnerabilities
-
-// todo 
 
 ## Credits
 
