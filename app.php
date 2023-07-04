@@ -9,15 +9,21 @@ require __DIR__.'/vendor/autoload.php';
 $engine = new TemplatingEngine(
     templates: [
         __DIR__.'/tests/templates',
-        __DIR__.'/tests/templates2',
     ],
     cachePath: __DIR__.'/tests/cache',
-    cache: false,
+    // cache: false,
 );
 
 $engine->clearCache();
 
-dd($engine->render('t2', [
-    'name' => '<p>Hello world</p><script>alert("name")</script>',
-    'records' => [],
-]));
+$start = microtime(true);
+
+foreach (range(1, 100) as $item) {
+    $engine->render('echos', [
+        'name' => 'World',
+    ]);
+}
+
+$end = microtime(true);
+
+echo $end - $start . 's' . PHP_EOL;

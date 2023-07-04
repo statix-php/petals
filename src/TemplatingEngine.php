@@ -2,12 +2,13 @@
 
 namespace Statix\Petals;
 
-use Statix\Petals\Contracts\TemplatingEngine as TemplatingEngineContract;
-use Statix\Petals\Directives\CompilesConditionalDirectives;
+use Statix\Petals\Directives\Directives;
+use Statix\Petals\Directives\CompilesCustomElements;
 use Statix\Petals\Directives\CompilesEchoDirectives;
 use Statix\Petals\Directives\CompilesForLoopDirectives;
 use Statix\Petals\Directives\CompilesVerbatimDirectives;
-use Statix\Petals\Directives\Directives;
+use Statix\Petals\Directives\CompilesConditionalDirectives;
+use Statix\Petals\Contracts\TemplatingEngine as TemplatingEngineContract;
 
 class TemplatingEngine implements TemplatingEngineContract
 {
@@ -15,7 +16,8 @@ class TemplatingEngine implements TemplatingEngineContract
         CompilesVerbatimDirectives,
         CompilesConditionalDirectives,
         CompilesEchoDirectives,
-        CompilesForLoopDirectives;
+        CompilesForLoopDirectives,
+        CompilesCustomElements;
 
     protected array $sharedData = [];
 
@@ -78,11 +80,6 @@ class TemplatingEngine implements TemplatingEngineContract
     {
         $templatePath = $this->getTemplatePath($template);
 
-        // check if the template exists
-        if (! file_exists($templatePath)) {
-            throw new \Exception("Template {$template} does not exist.");
-        }
-
         // get the compiled path
         $compiledPath = $this->getCompiledPath($template);
 
@@ -143,16 +140,10 @@ class TemplatingEngine implements TemplatingEngineContract
      */
     public function getCompiledPath(string $template): string
     {
-        // generate a unique name for the compiled template that accounts for the template path and the last modified time
         $templatePath = $this->getTemplatePath($template);
 
-        if (file_exists($templatePath)) {
-            $lastModified = filemtime($templatePath);
-        } else {
-            $lastModified = time();
-        }
-
-        $compiledName = md5($templatePath.'-'.$lastModified).'.php';
+        // generate a unique name for the compiled template that accounts for the template path and the last modified time
+        $compiledName = md5($templatePath.'-'.filemtime($templatePath)).'.php';
 
         return $this->cachePath.DIRECTORY_SEPARATOR.$compiledName;
     }
@@ -191,12 +182,18 @@ class TemplatingEngine implements TemplatingEngineContract
                 }
             }
 
-            // just return the first templates directory
-            return realpath($this->templates[0].DIRECTORY_SEPARATOR.$template);
+            // if the template does not exist in any of the templates directories, throw an exception
+            throw new \Exception("Template {$template} does not exist.");
         }
 
-        // return the path to the template
-        return realpath($this->templates.DIRECTORY_SEPARATOR.$template);
+        $templatePath = realpath($this->templates.DIRECTORY_SEPARATOR.$template);
+
+        // if the template does not exist, throw an exception
+        if ($templatePath === false) {
+            throw new \Exception("Template {$template} does not exist.");
+        }
+
+        return $templatePath;
     }
 
     /**
@@ -204,13 +201,6 @@ class TemplatingEngine implements TemplatingEngineContract
      */
     public function render(string $template, array $data = []): string
     {
-        $templatePath = $this->getTemplatePath($template);
-
-        // if the template does not exist, throw an exception
-        if (! file_exists($templatePath)) {
-            throw new \Exception("Template {$template} does not exist.");
-        }
-
         // assign the data to the a protected property
         $this->data = $data;
 
@@ -230,8 +220,11 @@ class TemplatingEngine implements TemplatingEngineContract
         ob_start();
 
         (function () use ($compiledPath) {
+            // dd(array_merge($this->sharedData, $this->data));
+
             // extract the data to variables
             extract(array_merge($this->sharedData, $this->data));
+
 
             // include the compiled template
             include $compiledPath;

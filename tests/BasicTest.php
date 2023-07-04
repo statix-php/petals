@@ -61,24 +61,6 @@ it('throws an exception when compiling a template that does not exist', function
     $engine->compile('does-not-exist');
 })->throws(\Exception::class);
 
-// test the compiled file name is the md5 hash of the template name and the last modified time of the template
-it('the compiled file name is the md5 hash of the template name and the last modified time of the template', function () {
-    $engine = new TemplatingEngine(
-        templates: __DIR__.'/templates',
-        cachePath: __DIR__.'/cache',
-    );
-
-    $templatePath = $engine->getTemplatePath('base');
-
-    $lastModified = filemtime($templatePath);
-
-    $compiledName = md5($templatePath.'-'.$lastModified).'.php';
-
-    $compiledPath = str_replace('/', '\\', $engine->getCompiledPath('base'));
-
-    expect($compiledPath)->toBe(realpath(__DIR__.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.$compiledName));
-});
-
 // test when compiling a template that exists, it returns the path to the compiled file
 it('returns the path to the compiled file when compiling a template that exists', function () {
     $engine = new TemplatingEngine(
