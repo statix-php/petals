@@ -20,8 +20,9 @@ trait CompilesForLoopDirectives
 
     protected function compileForeach(string $template): string
     {
-        // use a regex to find all @foreach() statements and replace them with <?php foreach ():
         $template = trim(preg_replace('/@foreach\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php foreach ($1): ?>', $template));
+
+        // $template = trim(preg_replace('/@@foreach/', '@foreach', $template));
 
         return $template;
     }
@@ -31,6 +32,8 @@ trait CompilesForLoopDirectives
         // use a regex to find all @endforeach() statements and replace them with <?php endforeach;
         $template = trim(preg_replace('/@endforeach/', '<?php endforeach; ?>', $template));
 
+        // $template = trim(preg_replace('/@@endforeach/', '@endforeach', $template));
+
         return $template;
     }
 
@@ -39,6 +42,8 @@ trait CompilesForLoopDirectives
         // use a regex to find all @for() statements and replace them with <?php for ():
         $template = trim(preg_replace('/@for\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php for ($1): ?>', $template));
 
+        $template = trim(preg_replace('/@@for/', '@for', $template));
+
         return $template;
     }
 
@@ -46,6 +51,8 @@ trait CompilesForLoopDirectives
     {
         // use a regex to find all @endfor() statements and replace them with <?php endfor;
         $template = trim(preg_replace('/@endfor/', '<?php endfor; ?>', $template));
+
+        // $template = trim(preg_replace('/@@endfor/', '@endfor', $template));
 
         return $template;
     }

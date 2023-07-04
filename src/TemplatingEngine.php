@@ -3,9 +3,9 @@
 namespace Statix\Petals;
 
 use Statix\Petals\Contracts\TemplatingEngine as TemplatingEngineContract;
+use Statix\Petals\Directives\CompilesConditionalDirectives;
 use Statix\Petals\Directives\CompilesEchoDirectives;
 use Statix\Petals\Directives\CompilesForLoopDirectives;
-use Statix\Petals\Directives\CompilesIfDirectives;
 use Statix\Petals\Directives\CompilesVerbatimDirectives;
 use Statix\Petals\Directives\Directives;
 
@@ -13,7 +13,7 @@ class TemplatingEngine implements TemplatingEngineContract
 {
     use Directives,
         CompilesVerbatimDirectives,
-        CompilesIfDirectives,
+        CompilesConditionalDirectives,
         CompilesEchoDirectives,
         CompilesForLoopDirectives;
 

@@ -30,5 +30,29 @@
         Hello, @{{ name }}.
     </div>    
 
+    <p>Unescaped Ouput: {!! $name !!}</p>
+
+    <p>The current time is {{ time() }}</p>
+
+    @if (count($records) === 1)
+        I have one record!
+    @elseif (count($records) > 1)
+        I have multiple records!
+    @else
+        I don't have any records!
+    @endif
+
+    @unless(false)
+        You are not signed in.
+    @endunless
+
+    @isset($records)
+        // $records is defined and is not null...
+    @endisset
+    
+    @empty($records)
+        // $records is "empty"...
+    @endempty
+
 @endsection
 
