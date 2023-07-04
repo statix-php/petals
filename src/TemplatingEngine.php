@@ -47,6 +47,7 @@ class TemplatingEngine implements TemplatingEngineContract
             throw new \Exception("Cache path {$this->cachePath} is not writable.");
         }
 
+        // loop through the traits and call the boot method for each trait
         foreach (class_uses($this) as $trait) {
             $method = is_object($trait) ? get_class($trait) : $trait;
             $method = 'boot'.basename(str_replace('\\', '/', $method));
@@ -302,5 +303,13 @@ class TemplatingEngine implements TemplatingEngineContract
     public function share(array $data): void
     {
         $this->sharedData = array_merge($this->sharedData, $data);
+    }
+
+    /**
+     * Check if the given template exists.
+     */
+    public function templateExists(string $template): bool
+    {
+        return file_exists($this->getTemplatePath($template));
     }
 }

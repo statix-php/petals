@@ -30,12 +30,12 @@ $engine = new TemplatingEngine(
 );
 
 // Render the templates/app.blade.php template
-$engine->render('app', [
+$content = $engine->render('app', [
     'message' => 'Hello world!',
 ]);
 
 // Render the given string
-$engine->renderString('Hello {{ $name }}! The unix timestamp is {{ $time }}', [
+$content = $engine->renderString('Hello {{ $name }}! The unix timestamp is {{ $time }}', [
     'name' => 'world',
     'time' => time(),
 ]);

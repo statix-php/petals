@@ -25,10 +25,7 @@
     "autoload": {
         "psr-4": {
             "Statix\\Petals\\": "src"
-        },
-        "files": [
-            "src/helpers.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
