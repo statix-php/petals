@@ -57,6 +57,17 @@ class TemplatingEngine implements TemplatingEngineContract
         }
     }
 
+    public function clearCache(): void
+    {
+        $files = glob($this->cachePath.'/*');
+
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                unlink($file);
+            }
+        }
+    }
+
     /**
      * Compile the given template and return the path to the compiled php file.
      *

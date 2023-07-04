@@ -19,7 +19,35 @@ composer require statix-php/petals
 ## Usage
 
 ```php
-// todo
+use Statix\Petals\TemplatingEngine;
+
+// require the composer autoloader
+require __DIR__.'/vendor/autoload.php';
+
+$engine = new TemplatingEngine(
+    templates: __DIR__.'/templates',
+    cachePath: __DIR__.'/cache',
+);
+
+// Render the templates/app.blade.php template
+$engine->render('app', [
+    'message' => 'Hello world!',
+]);
+
+// Render the given string
+$engine->renderString('Hello {{ $name }}! The unix timestamp is {{ $time }}', [
+    'name' => 'world',
+    'time' => time(),
+]);
+
+// Compile the template to the cache directory, the compiled template will be used to render the template when render is called
+$engine->complile('app');
+
+// Compile the given string to the cache directory, if render is called on the same string, it will be rendered from the compiled cache template
+$engine->compileString('Hello {{ $name }}! The unix timestamp is {{ $time }}');
+
+// Clear the compiled templates
+$engine->clearCache();
 ```
 
 ## Testing
