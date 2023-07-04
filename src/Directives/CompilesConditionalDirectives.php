@@ -27,7 +27,7 @@ trait CompilesConditionalDirectives
     protected function compileIf(string $expression): string
     {
         // use a regex to find all @if() and @if () and replace them with <?php if ():, allow expressions to be mutliple lines
-        $expression = trim(preg_replace('/@if\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php if ($1): ?>', $expression));
+        $expression = trim(preg_replace('/@if\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php if($1): ?>', $expression));
 
         return $expression;
     }
@@ -46,7 +46,7 @@ trait CompilesConditionalDirectives
     protected function compileElseIf(string $expression): string
     {
         // use a regex to find all @elseif() and @elseif () and replace them with <?php elseif ():, allow expressions to be mutliple lines
-        $expression = trim(preg_replace('/@elseif\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php elseif ($1): ?>', $expression));
+        $expression = trim(preg_replace('/@elseif\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php elseif($1): ?>', $expression));
 
         return $expression;
     }
@@ -68,7 +68,7 @@ trait CompilesConditionalDirectives
     protected function compileUnless(string $expression): string
     {
         // use a regex to find all @unless() and @unless () and replace them with <?php if (!):
-        $expression = trim(preg_replace('/@unless\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php if (!$1): ?>', $expression));
+        $expression = trim(preg_replace('/@unless\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php if(!$1): ?>', $expression));
 
         return $expression;
     }
@@ -90,7 +90,7 @@ trait CompilesConditionalDirectives
     protected function compileIsset(string $expression): string
     {
         // use a regex to find all @isset() and @isset () and replace them with <?php if (isset()):
-        $expression = trim(preg_replace('/@isset\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php if (isset($1)): ?>', $expression));
+        $expression = trim(preg_replace('/@isset\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php if(isset($1)): ?>', $expression));
 
         return $expression;
     }
@@ -112,7 +112,7 @@ trait CompilesConditionalDirectives
     protected function compileEmpty(string $expression): string
     {
         // use a regex to find all @empty() and @empty () and replace them with <?php if (empty()):
-        $expression = trim(preg_replace('/@empty\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php if (empty($1)): ?>', $expression));
+        $expression = trim(preg_replace('/@empty\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php if(empty($1)): ?>', $expression));
 
         return $expression;
     }

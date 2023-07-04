@@ -3,13 +3,14 @@
 use Statix\Petals\Contracts\TemplatingEngine as TemplatingEngineContract;
 use Statix\Petals\TemplatingEngine;
 
-it('it can be created', function () {
+// test it implements the TemplatingEngineContract
+it('implements the TemplatingEngineContract', function () {
     $engine = new TemplatingEngine(
         templates: __DIR__.'/templates',
         cachePath: __DIR__.'/cache',
     );
 
-    expect($engine)->toBeInstanceOf(TemplatingEngine::class);
+    expect($engine)->toBeInstanceOf(TemplatingEngineContract::class);
 });
 
 it('creates the cache path if it does not exist', function () {
@@ -28,16 +29,6 @@ it('creates the cache path if it does not exist', function () {
     rmdir($cachePath);
 });
 
-// test it implements the TemplatingEngineContract
-it('implements the TemplatingEngineContract', function () {
-    $engine = new TemplatingEngine(
-        templates: __DIR__.'/templates',
-        cachePath: __DIR__.'/cache',
-    );
-
-    expect($engine)->toBeInstanceOf(TemplatingEngineContract::class);
-});
-
 // test it has a public compile method
 it('has 4 public methods required to render or compile', function () {
     $engine = new TemplatingEngine(
@@ -50,6 +41,9 @@ it('has 4 public methods required to render or compile', function () {
         'compileString',
         'render',
         'renderString',
+        'getTemplatePath',
+        'getCompiledPath',
+        'clearCache',
     ];
 
     foreach ($methods as $method) {
@@ -289,4 +283,265 @@ it('can set shared data to be included in all templates', function () {
     $rendered = $engine->renderString('Hello {{ $name }}, the time is: {{ $time }}', ['time' => $time]);
 
     expect($rendered)->toBe('Hello World, the time is: '.$time);
+});
+
+// test it compiles @verbatim directives
+it('compiles @verbatim directives', function () {
+    $engine = new TemplatingEngine(
+        templates: __DIR__.'/templates',
+        cachePath: __DIR__.'/cache',
+    );
+
+    $compiled = $engine->compileString('@verbatim Hello {{ $name }} @endverbatim');
+
+    expect($compiled)->toBe(
+        'Hello {{ $name }}'
+    );
+});
+
+// test it compiles multiline @verbatim directives
+it('compiles multiline @verbatim directives', function () {
+    $engine = new TemplatingEngine(
+        templates: __DIR__.'/templates',
+        cachePath: __DIR__.'/cache',
+    );
+
+    $compiled = $engine->compileString('@verbatim
+        <div class="container">
+            Hello, {{ name }}.
+        </div>
+    @endverbatim');
+
+    expect($compiled)->toBe(
+        '<div class="container">
+            Hello, {{ name }}.
+        </div>'
+    );
+});
+
+// test it compiles @if directives
+it('compiles @if directives', function () {
+    $engine = new TemplatingEngine(
+        templates: __DIR__.'/templates',
+        cachePath: __DIR__.'/cache',
+    );
+
+    $compiled = $engine->compileString('@if(true) Hello @endif');
+
+    expect($compiled)->toBe(
+        '<?php if(true): ?> Hello <?php endif; ?>'
+    );
+
+    $compiled = $engine->compileString('@if(false) Hello @else World @endif');
+
+    expect($compiled)->toBe(
+        '<?php if(false): ?> Hello <?php else: ?> World <?php endif; ?>'
+    );
+
+    $compiled = $engine->compileString('@if(false) Hello @elseif(true) World @endif');
+
+    expect($compiled)->toBe(
+        '<?php if(false): ?> Hello <?php elseif(true): ?> World <?php endif; ?>'
+    );
+
+    $compiled = $engine->compileString('@if(false) Hello @elseif(false) World @else Goodbye @endif');
+
+    expect($compiled)->toBe(
+        '<?php if(false): ?> Hello <?php elseif(false): ?> World <?php else: ?> Goodbye <?php endif; ?>'
+    );
+
+    $compiled = $engine->compileString("
+        @if (count(\$records) === 1)
+            I have one record!
+        @elseif (count(\$records) > 1)
+            I have multiple records!
+        @else
+            I don't have any records!
+        @endif
+    ");
+
+    expect($compiled)->toBe(
+        "<?php if(count(\$records) === 1): ?>
+            I have one record!
+        <?php elseif(count(\$records) > 1): ?>
+            I have multiple records!
+        <?php else: ?>
+            I don't have any records!
+        <?php endif; ?>"
+    );
+
+    // test it compiles @if directives with multiline conditions
+    $compiled = $engine->compileString('@if(
+        true
+    ) Hello @endif');
+
+    expect($compiled)->toBe(
+        '<?php if(
+        true
+    ): ?> Hello <?php endif; ?>'
+    );
+});
+
+// it renderes @if directives with multiline conditions
+it('renders @if directives with multiline conditions', function () {
+    $engine = new TemplatingEngine(
+        templates: __DIR__.'/templates',
+        cachePath: __DIR__.'/cache',
+    );
+
+    // test if directive with no else
+    $rendered = $engine->renderString('@if(
+        true
+    ) Hello @endif');
+
+    expect($rendered)->toBe(' Hello ');
+
+    // test if directive with else
+    $rendered = $engine->renderString('@if(
+        false
+    ) Hello @else World @endif');
+
+    expect($rendered)->toBe(' World ');
+
+    // test if directive with elseif
+    $rendered = $engine->renderString('@if(
+        false
+    ) Hello @elseif(
+        true
+    ) World @endif');
+
+    expect($rendered)->toBe(' World ');
+
+    // test if directive with elseif and else
+    $rendered = $engine->renderString('@if(
+        false
+    ) Hello @elseif(
+        false
+    ) World @else Goodbye @endif');
+
+    expect($rendered)->toBe(' Goodbye ');
+});
+
+// it can compile @unless directives
+it('can compile @unless directives', function () {
+    $engine = new TemplatingEngine(
+        templates: __DIR__.'/templates',
+        cachePath: __DIR__.'/cache',
+    );
+    $compiled = $engine->compileString('@unless(true) Hello @endunless');
+
+    expect($compiled)->toBe(
+        '<?php if(!true): ?> Hello <?php endif; ?>'
+    );
+
+    $compiled = $engine->compileString('@unless(false) Hello @else World @endunless');
+
+    expect($compiled)->toBe(
+        '<?php if(!false): ?> Hello <?php else: ?> World <?php endif; ?>'
+    );
+
+    $compiled = $engine->compileString('@unless(false) Hello @elseif(true) World @endunless');
+
+    expect($compiled)->toBe(
+        '<?php if(!false): ?> Hello <?php elseif(true): ?> World <?php endif; ?>'
+    );
+
+    $compiled = $engine->compileString('@unless(false) Hello @elseif(false) World @else Goodbye @endunless');
+
+    expect($compiled)->toBe(
+        '<?php if(!false): ?> Hello <?php elseif(false): ?> World <?php else: ?> Goodbye <?php endif; ?>'
+    );
+
+    $compiled = $engine->compileString("
+        @unless (count(\$records) === 1)
+            I have one record!
+        @elseif (count(\$records) > 1)
+            I have multiple records!
+        @else
+            I don't have any records!
+        @endunless
+    ");
+
+    // dd($compiled);
+
+    expect($compiled)->toBe(
+        "<?php if(!count(\$records) === 1): ?>
+            I have one record!
+        <?php elseif(count(\$records) > 1): ?>
+            I have multiple records!
+        <?php else: ?>
+            I don't have any records!
+        <?php endif; ?>"
+    );
+
+    // test it compiles @unless directives with multiline conditions
+    $compiled = $engine->compileString('@unless(
+        true
+    ) Hello @endunless');
+
+    expect($compiled)->toBe(
+        '<?php if(!
+        true
+    ): ?> Hello <?php endif; ?>'
+    );
+});
+
+// it compiles @isset directives
+it('compiles @isset directives', function () {
+    $engine = new TemplatingEngine(
+        templates: __DIR__.'/templates',
+        cachePath: __DIR__.'/cache',
+    );
+    $compiled = $engine->compileString('@isset($name) Hello @endisset');
+
+    expect($compiled)->toBe(
+        '<?php if(isset($name)): ?> Hello <?php endif; ?>'
+    );
+
+    $compiled = $engine->compileString('@isset($name) Hello @else World @endisset');
+
+    expect($compiled)->toBe(
+        '<?php if(isset($name)): ?> Hello <?php else: ?> World <?php endif; ?>'
+    );
+
+    // test it compiles @isset directives with multiline conditions
+    $compiled = $engine->compileString('@isset(
+        $name
+    ) Hello @endisset');
+
+    expect($compiled)->toBe(
+        '<?php if(isset(
+        $name
+    )): ?> Hello <?php endif; ?>'
+    );
+});
+
+// it compiles @empty directives
+it('compiles @empty directives', function () {
+    $engine = new TemplatingEngine(
+        templates: __DIR__.'/templates',
+        cachePath: __DIR__.'/cache',
+    );
+    $compiled = $engine->compileString('@empty($name) Hello @endempty');
+
+    expect($compiled)->toBe(
+        '<?php if(empty($name)): ?> Hello <?php endif; ?>'
+    );
+
+    $compiled = $engine->compileString('@empty($name) Hello @else World @endempty');
+
+    expect($compiled)->toBe(
+        '<?php if(empty($name)): ?> Hello <?php else: ?> World <?php endif; ?>'
+    );
+
+    // test it compiles @empty directives with multiline conditions
+    $compiled = $engine->compileString('@empty(
+        $name
+    ) Hello @endempty');
+
+    expect($compiled)->toBe(
+        '<?php if(empty(
+        $name
+    )): ?> Hello <?php endif; ?>'
+    );
 });
