@@ -4,7 +4,7 @@ namespace Statix\Petals\Directives;
 
 trait CompilesForLoopDirectives
 {
-    public function bootCompilesForLoopDirectives(): void
+    protected function bootCompilesForLoopDirectives(): void
     {
         $directives = [
             '@foreach' => 'compileForeach',
@@ -18,7 +18,7 @@ trait CompilesForLoopDirectives
         }
     }
 
-    public function compileForeach(string $template): string
+    protected function compileForeach(string $template): string
     {
         // use a regex to find all @foreach() statements and replace them with <?php foreach ():
         $template = trim(preg_replace('/@foreach\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php foreach ($1): ?>', $template));
@@ -26,7 +26,7 @@ trait CompilesForLoopDirectives
         return $template;
     }
 
-    public function compileEndForeach(string $template): string
+    protected function compileEndForeach(string $template): string
     {
         // use a regex to find all @endforeach() statements and replace them with <?php endforeach;
         $template = trim(preg_replace('/@endforeach/', '<?php endforeach; ?>', $template));
@@ -34,7 +34,7 @@ trait CompilesForLoopDirectives
         return $template;
     }
 
-    public function compileFor(string $template): string
+    protected function compileFor(string $template): string
     {
         // use a regex to find all @for() statements and replace them with <?php for ():
         $template = trim(preg_replace('/@for\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php for ($1): ?>', $template));
@@ -42,7 +42,7 @@ trait CompilesForLoopDirectives
         return $template;
     }
 
-    public function compileEndFor(string $template): string
+    protected function compileEndFor(string $template): string
     {
         // use a regex to find all @endfor() statements and replace them with <?php endfor;
         $template = trim(preg_replace('/@endfor/', '<?php endfor; ?>', $template));

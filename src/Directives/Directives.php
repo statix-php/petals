@@ -4,38 +4,7 @@ namespace Statix\Petals\Directives;
 
 trait Directives
 {
-    public function compileComment(string $template): string
-    {
-        // use a regex to find all {{--}} statements and replace them with empty string
-        // revise the regex to ensure that statements that start with @{{ are not replaced
-        $template = trim(preg_replace('/{{--\s*(?!@)(.*?)\s*--}}/', '', $template));
-
-        return $template;
-    }
-
-    public function compileEcho(string $template): string
-    {
-        $template = trim(preg_replace('/(?<!@){{\s*(.*?)\s*}}/', '<?php echo @htmlspecialchars($1); ?>', $template));
-
-        return $template;
-    }
-
-    public function compileRawEcho(string $template): string
-    {
-        // use a regex to find all {{!! !!}} statements and replace them with <?php echo $1;
-        $template = trim(preg_replace('/{!!\s*(.*?)\s*!!}/', '<?php echo $1; ?>', $template));
-
-        return $template;
-    }
-
-    public function compileVerbatimEcho(string $template): string
-    {
-        $template = trim(preg_replace('/@{{\s*([\s\S]*?)\s*}}/s', '{{ $1 }}', $template));
-
-        return $template;
-    }
-
-    public function compileInclude(string $template): string
+    protected function compileInclude(string $template): string
     {
         // use a regex to find all @include statements and then loop over the matches using a for loop and allow the include to be multiline
         preg_match_all('/@include\s*\((.*?)\)/s', $template, $matches);
@@ -62,7 +31,7 @@ trait Directives
         return $template;
     }
 
-    public function compileExtends(string $template): string
+    protected function compileExtends(string $template): string
     {
         // use a regex to find all @extends statements and then loop over the matches using a for loop
         preg_match_all('/@extends\s*\((.*?)\)/', $template, $matches);
@@ -82,7 +51,7 @@ trait Directives
         return trim($template);
     }
 
-    public function startSection(string $name): void
+    protected function startSection(string $name): void
     {
         // set the current section name
         $this->currentSection = $name;
@@ -91,7 +60,7 @@ trait Directives
         ob_start();
     }
 
-    public function endSection(): void
+    protected function endSection(): void
     {
         // get the contents of the output buffer
         $sectionContent = ob_get_clean();
@@ -103,7 +72,7 @@ trait Directives
         $this->currentSection = null;
     }
 
-    public function compileSection(string $template): string
+    protected function compileSection(string $template): string
     {
         // use a regex to find all @section statements and then loop over the matches using a for loop
         preg_match_all('/@section\s*\((.*?)\)/', $template, $matches);
@@ -121,7 +90,7 @@ trait Directives
         return trim($template);
     }
 
-    public function compileEndSection(string $template): string
+    protected function compileEndSection(string $template): string
     {
         // use a regex to find all @endsection statements and then loop over the matches using a for loop
         preg_match_all('/@endsection/', $template, $matches);
@@ -135,12 +104,12 @@ trait Directives
         return trim($template);
     }
 
-    public function extends(string $template): void
+    protected function extends(string $template): void
     {
         echo $this->render($template, $this->data);
     }
 
-    public function compilePhp(string $template): string
+    protected function compilePhp(string $template): string
     {
         // use a regex to find only @php statements, ignoring @endphp
         preg_match_all('/@php/', $template, $matches);
@@ -154,7 +123,7 @@ trait Directives
         return trim($template);
     }
 
-    public function compileEndPhp(string $template): string
+    protected function compileEndPhp(string $template): string
     {
         // use a regex to find all @end statements and then loop over the matches using a for loop
         preg_match_all('/@endphp/', $template, $matches);
@@ -168,7 +137,7 @@ trait Directives
         return trim($template);
     }
 
-    public function compileYield(string $template): string
+    protected function compileYield(string $template): string
     {
         // use a regex to find all @yield statements and then loop over the matches using a for loop
         preg_match_all('/@yield\s*\((.*?)\)/', $template, $matches);
@@ -180,21 +149,6 @@ trait Directives
 
             // replace the @yield statement with <?php echo $this->sections[$name] ?? '';
             $template = preg_replace('/@yield\s*\((.*?)\)/', '<?php echo $this->sections['.$name.'] ?? ""; ?>', $template, 1);
-        }
-
-        return trim($template);
-    }
-
-    public function compileVerbatim(string $template): string
-    {
-        // use a regex to find all @verbatim and @endverbatim and replace them with <?php echo $1;, and allow the expression to span multiple lines
-        preg_match_all('/@verbatim\s*([\s\S]*?)\s*@endverbatim/s', $template, $matches);
-
-        // loop over the matches using a for loop
-        for ($i = 0; $i < count($matches[0]); $i++) {
-            $template = preg_replace('/(?<!@){{\s*(.*?)\s*}}/', '@{{ $1 }}', $template);
-            $template = preg_replace('/@verbatim/', '', $template);
-            $template = preg_replace('/@endverbatim/', '', $template);
         }
 
         return trim($template);

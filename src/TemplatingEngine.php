@@ -2,16 +2,19 @@
 
 namespace Statix\Petals;
 
-use Closure;
-use Statix\Petals\Directives\Directives;
-use Statix\Petals\Directives\CompilesIfDirectives;
-use Statix\Petals\Directives\CompilesForLoopDirectives;
 use Statix\Petals\Contracts\TemplatingEngine as TemplatingEngineContract;
+use Statix\Petals\Directives\CompilesEchoDirectives;
+use Statix\Petals\Directives\CompilesForLoopDirectives;
+use Statix\Petals\Directives\CompilesIfDirectives;
+use Statix\Petals\Directives\CompilesVerbatimDirectives;
+use Statix\Petals\Directives\Directives;
 
 class TemplatingEngine implements TemplatingEngineContract
 {
     use Directives,
-        CompilesIfDirectives, 
+        CompilesVerbatimDirectives,
+        CompilesIfDirectives,
+        CompilesEchoDirectives,
         CompilesForLoopDirectives;
 
     protected array $sharedData = [];
@@ -23,11 +26,6 @@ class TemplatingEngine implements TemplatingEngineContract
         '@section' => 'compileSection',
         '@endsection' => 'compileEndSection',
         '@extends' => 'compileExtends',
-        '@verbatim' => 'compileVerbatim',
-        '{{--' => 'compileComment',
-        '{{' => 'compileEcho',
-        '{!!' => 'compileRawEcho',
-        '@{{' => 'compileVerbatimEcho',
         '@php' => 'compilePhp',
         '@endphp' => 'compileEndPhp',
         '@yield' => 'compileYield',
@@ -37,6 +35,7 @@ class TemplatingEngine implements TemplatingEngineContract
         private string $templates,
         private string $cachePath,
         private string $extension = '.blade.php',
+        private bool $cache = true,
     ) {
         // ensure that the cache path exists
         if (! file_exists($this->cachePath)) {
@@ -50,7 +49,7 @@ class TemplatingEngine implements TemplatingEngineContract
 
         foreach (class_uses($this) as $trait) {
             $method = is_object($trait) ? get_class($trait) : $trait;
-            $method = 'boot' . basename(str_replace('\\', '/', $method));
+            $method = 'boot'.basename(str_replace('\\', '/', $method));
 
             if (method_exists($this, $method)) {
                 $this->{$method}();
@@ -60,6 +59,8 @@ class TemplatingEngine implements TemplatingEngineContract
 
     /**
      * Compile the given template and return the path to the compiled php file.
+     *
+     * @throws \Exception
      */
     public function compile(string $template): string
     {
@@ -74,7 +75,7 @@ class TemplatingEngine implements TemplatingEngineContract
         $compiledPath = $this->getCompiledPath($template);
 
         // if the compiled path does not exist or the template has been modified since the last compile, compile the template
-        if (! file_exists($compiledPath) || filemtime($templatePath) > filemtime($compiledPath)) {
+        if (! file_exists($compiledPath) || filemtime($templatePath) > filemtime($compiledPath) || ! $this->cache) {
             // get the template contents
             $templateContents = file_get_contents($templatePath);
 
@@ -93,6 +94,8 @@ class TemplatingEngine implements TemplatingEngineContract
 
     /**
      * Compile the given string and return the compiled string.
+     *
+     * @throws \Exception
      */
     public function compileString(string $template): string
     {
@@ -199,17 +202,16 @@ class TemplatingEngine implements TemplatingEngineContract
         // start output buffering
         ob_start();
 
-        // extract the data to variables
-        extract(array_merge($this->sharedData, $this->data));
+        (function () use ($compiledPath) {
+            // extract the data to variables
+            extract(array_merge($this->sharedData, $this->data));
 
-        // include the compiled template
-        include $compiledPath;
+            // include the compiled template
+            include $compiledPath;
+        })();
 
-        // get the contents of the output buffer
-        $contents = ob_get_contents();
-
-        // end output buffering
-        ob_end_clean();
+        // get the contents of the output buffer and end the buffer
+        $contents = ob_get_clean();
 
         // return the contents
         return $contents;
@@ -241,6 +243,51 @@ class TemplatingEngine implements TemplatingEngineContract
         return $contents;
     }
 
+    /**
+     * Render the given template with the given data and write the contents to the given path.
+     * If the path does not exist, it will be created.
+     * If the path exists, it will be overwritten.
+     * Returns the path.
+     */
+    public function renderTo(string $path, string $template, array $data = []): string
+    {
+        $content = $this->render($template, $data);
+
+        // make sure the path exists and if it does not, create it and any parent directories
+        if (! file_exists(dirname($path))) {
+            mkdir(dirname($path), 0777, true);
+        }
+
+        // write the contents to the path
+        file_put_contents($path, $content);
+
+        return $path;
+    }
+
+    /**
+     * Render the given string with the given data and write the contents to the given path.
+     * If the path does not exist, it will be created.
+     * If the path exists, it will be overwritten.
+     * Returns the path.
+     */
+    public function renderStringTo(string $path, string $template, array $data = []): string
+    {
+        $content = $this->renderString($template, $data);
+
+        // make sure the path exists and if it does not, create it and any parent directories
+        if (! file_exists(dirname($path))) {
+            mkdir(dirname($path), 0777, true);
+        }
+
+        // write the contents to the path
+        file_put_contents($path, $content);
+
+        return $path;
+    }
+
+    /**
+     * Share data with all templates.
+     */
     public function share(array $data): void
     {
         $this->sharedData = array_merge($this->sharedData, $data);
