@@ -4,69 +4,6 @@ namespace Statix\Petals\Directives;
 
 trait Directives
 {
-    public function compileIf(string $template): string
-    {
-        // use a regex to find all @if() and @if () and replace them with <?php if ():, allow expressions to be mutliple lines
-        $template = trim(preg_replace('/@if\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php if ($1): ?>', $template));
-
-        return $template;
-    }
-
-    public function compileElse(string $template): string
-    {
-        // use a regex to find all @else() statements and replace them with <?php else:
-        $template = trim(preg_replace('/@else/', '<?php else: ?>', $template));
-
-        return $template;
-    }
-
-    public function compileElseIf(string $template): string
-    {
-        $template = trim(preg_replace('/@elseif\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php elseif ($1): ?>', $template));
-
-        return $template;
-    }
-
-    public function compileEndIf(string $template): string
-    {
-        // use a regex to find all @endif() statements and replace them with <?php endif;
-        $template = trim(preg_replace('/@endif/', '<?php endif; ?>', $template));
-
-        return $template;
-    }
-
-    public function compileForeach(string $template): string
-    {
-        // use a regex to find all @foreach() statements and replace them with <?php foreach ():
-        $template = trim(preg_replace('/@foreach\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php foreach ($1): ?>', $template));
-
-        return $template;
-    }
-
-    public function compileEndForeach(string $template): string
-    {
-        // use a regex to find all @endforeach() statements and replace them with <?php endforeach;
-        $template = trim(preg_replace('/@endforeach/', '<?php endforeach; ?>', $template));
-
-        return $template;
-    }
-
-    public function compileFor(string $template): string
-    {
-        // use a regex to find all @for() statements and replace them with <?php for ():
-        $template = trim(preg_replace('/@for\s*\(([^()]*(?:\([^()]*\))*[^()]*)\)/s', '<?php for ($1): ?>', $template));
-
-        return $template;
-    }
-
-    public function compileEndFor(string $template): string
-    {
-        // use a regex to find all @endfor() statements and replace them with <?php endfor;
-        $template = trim(preg_replace('/@endfor/', '<?php endfor; ?>', $template));
-
-        return $template;
-    }
-
     public function compileComment(string $template): string
     {
         // use a regex to find all {{--}} statements and replace them with empty string

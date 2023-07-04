@@ -2,26 +2,23 @@
 
 namespace Statix\Petals;
 
-use Statix\Petals\Contracts\TemplatingEngine as TemplatingEngineContract;
+use Closure;
 use Statix\Petals\Directives\Directives;
+use Statix\Petals\Directives\CompilesIfDirectives;
+use Statix\Petals\Directives\CompilesForLoopDirectives;
+use Statix\Petals\Contracts\TemplatingEngine as TemplatingEngineContract;
 
 class TemplatingEngine implements TemplatingEngineContract
 {
-    use Directives;
+    use Directives,
+        CompilesIfDirectives, 
+        CompilesForLoopDirectives;
 
     protected array $sharedData = [];
 
     protected array $data = [];
 
     protected array $directives = [
-        '@if' => 'compileIf',
-        '@elseif' => 'compileElseIf',
-        '@else' => 'compileElse',
-        '@endif' => 'compileEndIf',
-        '@foreach' => 'compileForeach',
-        '@endforeach' => 'compileEndForeach',
-        '@for' => 'compileFor',
-        '@endfor' => 'compileEndFor',
         '@include' => 'compileInclude',
         '@section' => 'compileSection',
         '@endsection' => 'compileEndSection',
@@ -49,6 +46,15 @@ class TemplatingEngine implements TemplatingEngineContract
         // ensure that the cache path is writable
         if (! is_writable($this->cachePath)) {
             throw new \Exception("Cache path {$this->cachePath} is not writable.");
+        }
+
+        foreach (class_uses($this) as $trait) {
+            $method = is_object($trait) ? get_class($trait) : $trait;
+            $method = 'boot' . basename(str_replace('\\', '/', $method));
+
+            if (method_exists($this, $method)) {
+                $this->{$method}();
+            }
         }
     }
 
@@ -134,6 +140,18 @@ class TemplatingEngine implements TemplatingEngineContract
         $compiledName = md5($templatePath.'-'.$lastModified).'.php';
 
         return $this->cachePath.DIRECTORY_SEPARATOR.$compiledName;
+    }
+
+    public function directive(string $name, $handler): void
+    {
+        // if the handler is an array, then the first item is the class and the second item is the method
+        if (is_array($handler)) {
+            $handler = function ($template) use ($handler) {
+                return $handler[0]->{$handler[1]}($template);
+            };
+        }
+
+        $this->directives[$name] = $handler;
     }
 
     /**
@@ -225,6 +243,6 @@ class TemplatingEngine implements TemplatingEngineContract
 
     public function share(array $data): void
     {
-        $this->sharedData = array_merge($this->sharedData, $data);        
+        $this->sharedData = array_merge($this->sharedData, $data);
     }
 }
