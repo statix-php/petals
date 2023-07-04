@@ -95,7 +95,7 @@ class TemplatingEngine implements TemplatingEngineContract
             $compiledContents = $this->compileString($templateContents);
 
             // append a php comment with the path variable to the compiled template
-            $compiledContents .= '<?php /** __template_path__: '.realpath($template).' */ ?>';
+            $compiledContents .= '<?php /** __template_path__: '.realpath($templatePath).' */ ?>';
 
             // write the compiled contents to the compiled path
             file_put_contents($compiledPath, trim($compiledContents));
