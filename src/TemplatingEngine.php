@@ -32,7 +32,7 @@ class TemplatingEngine implements TemplatingEngineContract
     ];
 
     public function __construct(
-        private string $templates,
+        private string|array $templates,
         private string $cachePath,
         private string $extension = '.blade.php',
         private bool $cache = true,
@@ -181,6 +181,21 @@ class TemplatingEngine implements TemplatingEngineContract
             $template .= $this->extension;
         }
 
+        // if the templates directory is an array, loop through the templates directories and check if the template exists in any of the directories, if it does, return the path to the template
+        if (is_array($this->templates)) {
+            foreach ($this->templates as $templatesDirectory) {
+                $templatePath = realpath($templatesDirectory.DIRECTORY_SEPARATOR.$template);
+
+                if ($templatePath !== false) {
+                    return $templatePath;
+                }
+            }
+
+            // just return the first templates directory
+            return realpath($this->templates[0].DIRECTORY_SEPARATOR.$template);
+        }
+
+        // return the path to the template
         return realpath($this->templates.DIRECTORY_SEPARATOR.$template);
     }
 

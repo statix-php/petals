@@ -29,6 +29,14 @@ $engine = new TemplatingEngine(
     cachePath: __DIR__.'/cache',
 );
 
+$engine = new TemplatingEngine(
+    templates: [
+        __DIR__ . '/templates-one',
+        __DIR__ . '/templates-two',
+    ],
+    cachePath: __DIR__.'/cache',
+);
+
 // Render the templates/app.blade.php template
 $content = $engine->render('app', [
     'message' => 'Hello world!',
