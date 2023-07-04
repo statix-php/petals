@@ -12,7 +12,7 @@ $engine = new TemplatingEngine(
         __DIR__.'/tests/templates2',
     ],
     cachePath: __DIR__.'/tests/cache',
-    // cache: false,
+    cache: false,
 );
 
 $engine->clearCache();
